@@ -28,34 +28,10 @@ function onSearchCountry(e) {
   }
   // обробляємо дані з бекенду
   fetchCountries(inputValue)
-  .then(dataCountry => {
-    // як що прийшло у відповеді 10 країн
-    if (dataCountry.length > 10) {
-      // проінформуй про це  
-      Notiflix.Notify.info(
-        'Too many matches found. Please enter a more specific name.'
-      );
-    } else if (dataCountry.length >= 2 && dataCountry.length <= 10) {
-      // Якщо бекенд повернув від 2-х до 10-и країн
-      // то виведи список знайдених країн
-      resetMarkup(refs.countryList);
-      createMarkupCountryList(dataCountry);
-      resetMarkup(refs.countryInfo);
-    } else {
-      // Якщо це масив з однією країною
-      // виведи картку країни
-      resetMarkup(refs.countryInfo);
-      createMarkupCountryInfo(dataCountry);
-      resetMarkup(refs.countryList);
-    }
-  })
-  .catch(() => {
-    resetMarkup(refs.countryList);
-    resetMarkup(refs.countryInfo);
-    Notiflix.Notify.failure('Oops, there is no country with that name');
-  });
+  .then(renderCountry)
+  .catch(onNoCountry);
 }
-// функція яка виводить прапор і назву країни
+// функція яка виводить прапор і назву країни списком
 function createMarkupCountryList(dataCountry) {
   const markup = dataCountry
     .map(({ name, flags }) => {
@@ -67,7 +43,7 @@ function createMarkupCountryList(dataCountry) {
     .join('');
   return refs.countryList.insertAdjacentHTML('beforeend', markup);
 }
-
+// функція яка виводить дані однієї країни
 function createMarkupCountryInfo(dataCountry) {
   const markup = dataCountry
     .map(({ name, capital, population, flags, languages }) => {
@@ -91,6 +67,34 @@ function createMarkupCountryInfo(dataCountry) {
     .join('');
 
   return refs.countryInfo.insertAdjacentHTML('beforeend', markup);
+}
+// функція з умовами обробки даніх
+function renderCountry(dataCountry) {  
+  // як що прийшло у відповеді 10 країн
+  if (dataCountry.length > 10) {
+    // проінформуй про це  
+    Notiflix.Notify.info(
+      'Too many matches found. Please enter a more specific name.'
+    );
+  } else if (dataCountry.length >= 2 && dataCountry.length <= 10) {
+    // Якщо бекенд повернув від 2-х до 10-и країн
+    // то виведи список знайдених країн
+    resetMarkup(refs.countryList);
+    createMarkupCountryList(dataCountry);
+    resetMarkup(refs.countryInfo);
+  } else {
+    // Якщо це масив з однією країною
+    // виведи картку країни та опис
+    resetMarkup(refs.countryInfo);
+    createMarkupCountryInfo(dataCountry);
+    resetMarkup(refs.countryList);
+  }
+}
+// функція на випадок відсутності країни
+function onNoCountry() {
+  resetMarkup(refs.countryList);
+  resetMarkup(refs.countryInfo);
+  Notiflix.Notify.failure('Oops, there is no country with that name');
 }
 function resetMarkup(e) {
   e.innerHTML = '';
